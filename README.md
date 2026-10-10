@@ -1,8 +1,8 @@
-# Forma — Smart Cushion Dashboard 🪑✨
+# WAVY COMPANY — Smart Cushion Dashboard 🪑✨
 
-เว็บแอปพลิเคชันแดชบอร์ดสำหรับเบาะนั่งอัจฉริยะ (**Smart Cushion Dashboard**) พัฒนาด้วย **React 19 + Vite** ตามดีไซน์มินิมอล เออร์โกโนมิกส์ (Forma Ergonomics UI)
+เว็บแอปพลิเคชันแดชบอร์ดสำหรับเบาะนั่งอัจฉริยะ (**Smart Cushion Dashboard**) โดย **WAVY COMPANY** พัฒนาด้วย **React 19 + Vite**
 
-![Forma Dashboard Preview](https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/armchair.svg)
+![WAVY COMPANY Dashboard Preview](https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/armchair.svg)
 
 ---
 
@@ -21,7 +21,7 @@
    - นับถอยหลังพักเบรก (Break Countdown)
    - ปุ่มกดบันทึกพักสายตา/ยืดเส้นยืดสาย (Take a break now)
    - ปรับช่วงเวลาแจ้งเตือนได้ (30, 45, 50, 60 นาที)
-4. **⚙️ Hardware Controls (Forma One)**:
+4. **⚙️ Hardware Controls (Wavy Cushion One)**:
    - ตรวจสอบสถานะการเชื่อมต่อบลูทูธ (Bluetooth Connected / Offline Toggle)
    - แสดงระดับแบตเตอรี่ (Battery Level 82%)
    - สวิตช์เปิด/ปิดการสั่นเตือนเมื่อนั่งเอียง (Posture Nudges Vibration)
