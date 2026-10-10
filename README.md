@@ -7,39 +7,42 @@ Web application for real-time ergonomic posture tracking and pressure distributi
 ```text
 +-----------------------------------------------------------+
 |                   Physical Sensor Layer                   |
-|  - Dual Ischial Pressure Transducers                      |
-|  - BLE 5.0 Peripheral (Forma / Wavy Protocol)             |
+|  - Dual Ischial & Sacral Pressure Transducers (16-Zone)   |
+|  - Surface Temperature Probes (Dual NTC Thermistors)      |
+|  - Chemiresistive Bio-Gas / VOC Detector (H2S / CH4)      |
+|  - BLE 5.0 Peripheral (Wavy Protocol @ 25 Hz)             |
 +-----------------------------------------------------------+
                              |
-                             | BLE GATT / Simulated Stream
+                             | BLE GATT / Multi-channel Telemetry
                              v
 +-----------------------------------------------------------+
 |                   Client Ingestion Engine                 |
-|  - Telemetry Stream Parser & Smoothing                    |
-|  - Weight Balance Calculator (L/R Delta Ratio)            |
-|  - State Engine (Oscillation Simulation & Presets)        |
+|  - Pressure Matrix Parser & Left/Right Pelvic Delta       |
+|  - Gluteal Fatigue & Vascular Stasis Estimator            |
+|  - Contact Thermal Threshold & Heat Trap Detector         |
+|  - Bio-gas Emission Event Ingestion & Auto-vent Actuator  |
 +-----------------------------------------------------------+
                              |
                              | Reactive State (React Hooks)
                              v
 +-----------------------------------------------------------+
 |                     Presentation Layer                    |
-|  - SVG Heatmap Projection (Radial Gradients & Isobars)    |
-|  - Time-series Posture Trend Vector Canvas                |
-|  - Telemetry KPI Cards & Session Timers                   |
-|  - Actuation & Calibration Dialogs                        |
+|  - Tri-zone Heatmap Projection (Ischial + Coccyx nodes)   |
+|  - Gluteal Health Telemetry Bar (Temp, Fatigue, VOC ppm)  |
+|  - Multi-Scenario Simulator (Left/Right, Slouch, Gas, Heat)|
+|  - Telemetry Logs & Comprehensive Diagnostics Reports     |
 +-----------------------------------------------------------+
 ```
 
 ### Core Architecture Components
 
 1. **Hardware & Ingestion Abstraction**
-   - Ingests raw bilateral pressure metrics (kPa) and weight distribution percentage.
-   - Built-in simulation fallback simulates micro-postural adjustments (sinusoidal deviation) and test states (Balanced, Leaning Left/Right, Slouching).
+   - Ingests raw bilateral pressure metrics (kPa), contact surface temperature (Celsius), and volatile organic gas emissions (ppm).
+   - Built-in simulation fallback simulates micro-postural adjustments (sinusoidal deviation) and test states (Balanced, Heavy Left, Heavy Right, Sacral Slouch, Bio-gas Emission, Thermal Stagnation, Deep Muscle Fatigue).
 
 2. **Metrics & Decision Engine**
-   - Posture scoring algorithm derived from lateral asymmetry and peak sacral load.
-   - Break scheduler tracking active duration against ergonomic interval thresholds.
+   - Posture scoring algorithm derived from lateral asymmetry, peak sacral load, and gluteal contact time.
+   - Thermal & air quality guardrails tracking surface heat traps and bio-gas exhaust triggers.
 
 3. **Presentation & Rendering**
    - Zero-dependency custom SVG contour and gradient rendering for low latency and consistent cross-platform performance.

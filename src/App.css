@@ -1583,3 +1583,123 @@ input:checked + .slider-ui:before {
   gap: 8px;
 }
 
+/* ========================================================
+   GLUTE HEALTH & PHYSIOLOGICAL SENSORY TELEMETRY BAR
+   ======================================================== */
+
+.glute-telemetry-banner {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  background: #ffffff;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.glute-telemetry-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.glute-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.glute-metric-label {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.glute-metric-val {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.2;
+}
+
+.glute-status-chip {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+}
+
+.glute-status-chip.chip-good {
+  background: #e3eedf;
+  color: #265e38;
+}
+
+.glute-status-chip.chip-alert {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Sacrum node in cushion */
+.sacral-node {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  filter: blur(12px);
+  z-index: 1;
+}
+
+/* Gas Dispersion Indicator */
+.gas-dispersion-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(16, 185, 129, 0.15);
+  border: 1.5px dashed #10b981;
+  border-radius: 999px;
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #047857;
+  z-index: 10;
+  animation: pulseVent 1.2s infinite ease-in-out;
+}
+
+@keyframes pulseVent {
+  0% { transform: translate(-50%, -50%) scale(0.95); opacity: 0.7; }
+  50% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(0.95); opacity: 0.7; }
+}
+
+@media (max-width: 900px) {
+  .glute-telemetry-banner {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .glute-telemetry-banner {
+    grid-template-columns: 1fr;
+  }
+}
+
+

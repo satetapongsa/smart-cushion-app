@@ -34,7 +34,13 @@ import {
   BarChart2,
   PieChart,
   RefreshCw,
-  Info
+  Info,
+  Thermometer,
+  Wind,
+  Flame,
+  AlertTriangle,
+  Smile,
+  Compass
 } from 'lucide-react';
 import './App.css';
 
@@ -46,14 +52,16 @@ export default function App() {
   const [isConnected, setIsConnected] = useState(true);
   const [batteryLevel, setBatteryLevel] = useState(82);
 
-  // Simulation State & Presets
-  const [posturePreset, setPosturePreset] = useState('balanced'); // 'balanced', 'left', 'right', 'slouch'
+  // Simulation State & Presets: 'balanced', 'left', 'right', 'slouch', 'fart', 'hot', 'fatigue'
+  const [posturePreset, setPosturePreset] = useState('balanced');
   const [isLiveSimulating, setIsLiveSimulating] = useState(true);
   const [simTick, setSimTick] = useState(0);
 
   // Settings Toggles
   const [postureNudges, setPostureNudges] = useState(true);
   const [breakReminders, setBreakReminders] = useState(true);
+  const [gasDetectionActive, setGasDetectionActive] = useState(true);
+  const [thermalReliefActive, setThermalReliefActive] = useState(true);
   const [ledBrightness, setLedBrightness] = useState(60);
   const [hapticIntensity, setHapticIntensity] = useState('medium'); // 'soft', 'medium', 'firm'
 
@@ -72,6 +80,9 @@ export default function App() {
   const [showReminderModal, setShowReminderModal] = useState(false);
   const [calibrationStep, setCalibrationStep] = useState(0); // 0: ready, 1: running, 2: done
   const [toastMessage, setToastMessage] = useState(null);
+
+  // Gas emission counter for session
+  const [gasEventsCount, setGasEventsCount] = useState(2);
 
   // Live Micro-movement Simulation
   useEffect(() => {
@@ -94,61 +105,175 @@ export default function App() {
         score: 0,
         leftGlow: 'transparent',
         rightGlow: 'transparent',
-        isWarning: false
+        sacralGlow: 'transparent',
+        isWarning: false,
+        seatTemp: 0,
+        gluteFatigue: 0,
+        gasDetected: false,
+        gasPpm: 0,
+        comfortLevel: 0,
+        fitStatus: 'Disconnected',
+        fitColor: '#88938a',
+        quadrantBias: 'None'
       };
     }
 
     const microShift = Math.sin(simTick) * 1.5;
 
     switch (posturePreset) {
+      case 'fart':
+        return {
+          leftPct: Math.round(49 + microShift),
+          rightPct: Math.round(51 - microShift),
+          peakKpa: (4.4 + microShift * 0.05).toFixed(1),
+          statusText: 'Bio-gas spike detected (H2S/CH4 420 ppm). Ventilating active chamber.',
+          balanceCategory: 'Gas Emission Detected',
+          score: 80,
+          leftGlow: 'radial-gradient(circle, #eab308 0%, #84cc16 55%, transparent 85%)',
+          rightGlow: 'radial-gradient(circle, #eab308 0%, #84cc16 55%, transparent 85%)',
+          sacralGlow: 'radial-gradient(circle, #10b981 0%, #34d399 50%, transparent 80%)',
+          isWarning: true,
+          seatTemp: (36.9 + Math.sin(simTick) * 0.1).toFixed(1),
+          gluteFatigue: 42,
+          gasDetected: true,
+          gasPpm: 420,
+          comfortLevel: 84,
+          fitStatus: 'Even Fit (Aerated)',
+          fitColor: '#10b981',
+          quadrantBias: 'Mid-Perineal Outflow'
+        };
+
+      case 'hot':
+        return {
+          leftPct: Math.round(48 + microShift),
+          rightPct: Math.round(52 - microShift),
+          peakKpa: (4.8 + microShift * 0.05).toFixed(1),
+          statusText: 'Gluteal contact temperature elevated (38.2°C). Thermal micro-circulation alert.',
+          balanceCategory: 'Heat Trap / Overheating',
+          score: 75,
+          leftGlow: 'radial-gradient(circle, #f97316 0%, #ef4444 60%, transparent 90%)',
+          rightGlow: 'radial-gradient(circle, #f97316 0%, #ef4444 60%, transparent 90%)',
+          sacralGlow: 'radial-gradient(circle, #ef4444 0%, #f97316 60%, transparent 90%)',
+          isWarning: true,
+          seatTemp: (38.2 + Math.sin(simTick) * 0.1).toFixed(1),
+          gluteFatigue: 78,
+          gasDetected: false,
+          gasPpm: 25,
+          comfortLevel: 68,
+          fitStatus: 'Heat Stagnation',
+          fitColor: '#ef4444',
+          quadrantBias: 'Ischial Bilateral Core'
+        };
+
+      case 'fatigue':
+        return {
+          leftPct: Math.round(56 + microShift),
+          rightPct: Math.round(44 - microShift),
+          peakKpa: (6.9 + microShift * 0.08).toFixed(1),
+          statusText: 'Severe gluteal fatigue & vascular numbness threshold (84%). Sit bone decompression advised.',
+          balanceCategory: 'Gluteal Muscle Fatigue',
+          score: 64,
+          leftGlow: 'radial-gradient(circle, #ea580c 0%, #dc2626 65%, transparent 90%)',
+          rightGlow: 'radial-gradient(circle, #f59e0b 0%, #84cc16 65%, transparent 90%)',
+          sacralGlow: 'radial-gradient(circle, #f59e0b 0%, transparent 75%)',
+          isWarning: true,
+          seatTemp: (37.6 + Math.sin(simTick) * 0.1).toFixed(1),
+          gluteFatigue: 84,
+          gasDetected: false,
+          gasPpm: 32,
+          comfortLevel: 58,
+          fitStatus: 'Deep Muscle Strain',
+          fitColor: '#ea580c',
+          quadrantBias: 'Left Piriformis Bias'
+        };
+
       case 'left':
         return {
           leftPct: Math.round(72 + microShift),
           rightPct: Math.round(28 - microShift),
-          peakKpa: (6.2 + (microShift * 0.1)).toFixed(1),
-          statusText: 'Higher pressure on left hip. Consider balancing weight.',
-          balanceCategory: 'Leaning Left',
+          peakKpa: (6.2 + microShift * 0.1).toFixed(1),
+          statusText: 'Heavy Left Bias (72%). Pelvis tilted; left gluteus maximus absorbing excessive load.',
+          balanceCategory: 'Heavy Left Glute Bias',
           score: 72,
           leftGlow: 'radial-gradient(circle, #ea580c 0%, #eab308 50%, #84cc16 85%)',
           rightGlow: 'radial-gradient(circle, #84cc16 0%, #a3e635 60%, transparent 100%)',
-          isWarning: true
+          sacralGlow: 'transparent',
+          isWarning: true,
+          seatTemp: (36.6 + Math.sin(simTick) * 0.1).toFixed(1),
+          gluteFatigue: 62,
+          gasDetected: false,
+          gasPpm: 22,
+          comfortLevel: 74,
+          fitStatus: 'Asymmetric Left Pinch',
+          fitColor: '#ea580c',
+          quadrantBias: 'Posterolateral Left (72%)'
         };
+
       case 'right':
         return {
           leftPct: Math.round(26 + microShift),
           rightPct: Math.round(74 - microShift),
-          peakKpa: (6.4 + (microShift * 0.1)).toFixed(1),
-          statusText: 'Higher pressure on right hip. Re-align posture.',
-          balanceCategory: 'Leaning Right',
+          peakKpa: (6.4 + microShift * 0.1).toFixed(1),
+          statusText: 'Heavy Right Bias (74%). Sciatic compression risk on right ischial tuberosity.',
+          balanceCategory: 'Heavy Right Glute Bias',
           score: 70,
           leftGlow: 'radial-gradient(circle, #84cc16 0%, #a3e635 60%, transparent 100%)',
           rightGlow: 'radial-gradient(circle, #ea580c 0%, #eab308 50%, #84cc16 85%)',
-          isWarning: true
+          sacralGlow: 'transparent',
+          isWarning: true,
+          seatTemp: (36.7 + Math.sin(simTick) * 0.1).toFixed(1),
+          gluteFatigue: 65,
+          gasDetected: false,
+          gasPpm: 24,
+          comfortLevel: 71,
+          fitStatus: 'Asymmetric Right Pinch',
+          fitColor: '#ea580c',
+          quadrantBias: 'Posterolateral Right (74%)'
         };
+
       case 'slouch':
         return {
           leftPct: Math.round(50 + microShift),
           rightPct: Math.round(50 - microShift),
-          peakKpa: (7.5 + (microShift * 0.1)).toFixed(1),
-          statusText: 'Posterior pelvic tilt detected. Sacral pressure is elevated.',
-          balanceCategory: 'Slouching / Back Heavy',
+          peakKpa: (7.5 + microShift * 0.1).toFixed(1),
+          statusText: 'Tailbone & Sacrum Overload. Coccyx receiving 7.5 kPa; disc pressure elevated.',
+          balanceCategory: 'Coccyx / Sacral Slouch',
           score: 61,
           leftGlow: 'radial-gradient(circle, #f59e0b 0%, #84cc16 70%, transparent 100%)',
           rightGlow: 'radial-gradient(circle, #f59e0b 0%, #84cc16 70%, transparent 100%)',
-          isWarning: true
+          sacralGlow: 'radial-gradient(circle, #dc2626 0%, #f97316 65%, transparent 90%)',
+          isWarning: true,
+          seatTemp: (37.2 + Math.sin(simTick) * 0.1).toFixed(1),
+          gluteFatigue: 76,
+          gasDetected: false,
+          gasPpm: 28,
+          comfortLevel: 62,
+          fitStatus: 'Poor Pelvic Fit',
+          fitColor: '#dc2626',
+          quadrantBias: 'Posterior Sacral Axis'
         };
+
       case 'balanced':
       default:
         return {
           leftPct: Math.round(48 + microShift),
           rightPct: Math.round(52 - microShift),
-          peakKpa: (4.2 + (microShift * 0.05)).toFixed(1),
-          statusText: 'Looking balanced. No high-pressure areas detected. Updates every 2s',
+          peakKpa: (4.2 + microShift * 0.05).toFixed(1),
+          statusText: 'Looking balanced. Even gluteal dispersion, healthy seat temperature.',
           balanceCategory: 'Evenly balanced',
           score: 86,
           leftGlow: 'radial-gradient(circle, #facc15 0%, #84cc16 55%, transparent 85%)',
           rightGlow: 'radial-gradient(circle, #facc15 0%, #84cc16 55%, transparent 85%)',
-          isWarning: false
+          sacralGlow: 'transparent',
+          isWarning: false,
+          seatTemp: (36.4 + Math.sin(simTick) * 0.08).toFixed(1),
+          gluteFatigue: 24,
+          gasDetected: false,
+          gasPpm: 18,
+          comfortLevel: 92,
+          fitStatus: 'Optimal Ergonomic Fit',
+          fitColor: '#2b7a4b',
+          quadrantBias: 'Symmetric (48% L / 52% R)'
         };
     }
   };
@@ -175,48 +300,56 @@ export default function App() {
     }, 2200);
   };
 
+  // Trigger simulated bio-gas vent
+  const handleTriggerFartVent = () => {
+    setPosturePreset('fart');
+    setGasEventsCount((prev) => prev + 1);
+    showToast('Air Quality Alert: Bio-gas venting sequence initiated');
+  };
+
   // Export report handler
   const handleDownloadReport = () => {
     const reportContent = `
 =========================================
-WAVY COMPANY - SMART CUSHION POSTURE REPORT
+WAVY COMPANY - SMART CUSHION COMPREHENSIVE TELEMETRY REPORT
 Date: Today, October 12
 User: Alex Lee (Personal workspace)
 Device: Wavy Cushion One (Battery: ${batteryLevel}%)
 =========================================
 
-SUMMARY METRICS:
+BIOMECHANICAL & GLUTEAL METRICS:
 - Overall Posture Score: ${currentStats.score} / 100
-- Current Sitting Session: 42 minutes
-- Total Sitting Today: 2 hours 18 minutes (3 sessions · 2 breaks taken)
-- Comfort Level: 92%
-- Current Weight Balance: Left ${currentStats.leftPct}% | Right ${currentStats.rightPct}%
-- Peak Pressure: ${currentStats.peakKpa} kPa
+- Pelvic Weight Balance: Left ${currentStats.leftPct}% | Right ${currentStats.rightPct}%
+- Quadrant Load Bias: ${currentStats.quadrantBias}
+- Buttock Contact Fit: ${currentStats.fitStatus}
+- Peak Ischial Pressure: ${currentStats.peakKpa} kPa
 
-POSTURE BREAKDOWN:
-- Good Posture: 86%
-- Shifting/Adjustment: 10%
-- Leaning/Asymmetry: 4%
+PHYSIOLOGICAL & SENSORY TELEMETRY:
+- Contact Surface Temperature: ${currentStats.seatTemp} °C
+- Gluteal Fatigue Index: ${currentStats.gluteFatigue} %
+- Comfort Index: ${currentStats.comfortLevel} %
+- Air Quality / Bio-gas (VOC/H2S): ${currentStats.gasPpm} ppm (Events Today: ${gasEventsCount})
+- Sitting Session: 42 min (Total: 2h 18 min)
 
 RECOMMENDATIONS:
-1. Maintain balanced weight on both ischial tuberosities.
-2. Keep break schedule active (current: every ${breakInterval} min).
-3. Lumbar support engaged, shoulders relaxed.
+1. Maintain weight distribution within 45% - 55% delta.
+2. If seat temperature exceeds 37.5°C, stand up for 2 minutes to restore capillary circulation.
+3. Keep micro-pore ventilation chamber active.
 
-Report generated by WAVY COMPANY Smart Cushion Dashboard.
+Report generated by WAVY COMPANY Smart Cushion Platform.
 =========================================
     `.trim();
 
     const element = document.createElement('a');
     const file = new Blob([reportContent], { type: 'text/plain' });
     element.href = URL.createObjectURL(file);
-    element.download = `Wavy_Company_Posture_Report_${new Date().toISOString().slice(0, 10)}.txt`;
+    element.download = `Wavy_Company_Glute_Report_${new Date().toISOString().slice(0, 10)}.txt`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
 
     setShowExportModal(false);
-    showToast('Posture report downloaded');
+    showToast('Telemetry report downloaded');
   };
 
   // Static / Mock Session History
@@ -229,8 +362,11 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
       score: 86,
       rating: 'great',
       balance: '48% L / 52% R',
-      breaks: '1 break taken',
-      notes: 'Optimal lumbar alignment maintained.'
+      temp: '36.4°C',
+      fatigue: '24%',
+      gas: '0 events',
+      fit: 'Optimal Fit',
+      notes: 'Optimal pelvic alignment and minimal thermal accumulation.'
     },
     {
       id: 'sess-2',
@@ -240,8 +376,11 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
       score: 82,
       rating: 'great',
       balance: '51% L / 49% R',
-      breaks: '1 break taken',
-      notes: 'Slight fatigue shift observed after min 65.'
+      temp: '37.1°C',
+      fatigue: '48%',
+      gas: '1 event (09:12 AM)',
+      fit: 'Even Fit',
+      notes: 'Gas discharge auto-vented at 09:12 AM. Slight glute fatigue.'
     },
     {
       id: 'sess-3',
@@ -251,8 +390,11 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
       score: 74,
       rating: 'needs_work',
       balance: '64% L / 36% R',
-      breaks: '0 breaks taken',
-      notes: 'Prolonged left lateral tilt during afternoon focus session.'
+      temp: '37.9°C',
+      fatigue: '76%',
+      gas: '2 events',
+      fit: 'Left Pinch',
+      notes: 'High buttock soreness. Heavy left glute bias with thermal trap.'
     },
     {
       id: 'sess-4',
@@ -262,8 +404,11 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
       score: 88,
       rating: 'great',
       balance: '50% L / 50% R',
-      breaks: '2 breaks taken',
-      notes: 'Excellent symmetrical distribution.'
+      temp: '36.5°C',
+      fatigue: '32%',
+      gas: '0 events',
+      fit: 'Optimal Fit',
+      notes: 'Excellent symmetric pressure distribution.'
     },
     {
       id: 'sess-5',
@@ -273,8 +418,11 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
       score: 69,
       rating: 'needs_work',
       balance: '58% L / 42% R',
-      breaks: '0 breaks taken',
-      notes: 'High sacral pressure. Slouching warning triggered 4 times.'
+      temp: '38.1°C',
+      fatigue: '85%',
+      gas: '1 event',
+      fit: 'Coccyx Strain',
+      notes: 'Severe slouching. Coccyx overpressure and high gluteal stiffness.'
     }
   ];
 
@@ -331,7 +479,10 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
 
             <button
               className={`nav-item ${activeTab === 'insights' ? 'active' : ''}`}
-              onClick={() => setActiveTab('insights')}
+              onClick={() => {
+                setActiveTab('insights');
+                showToast('Viewing Posture & Glute insights');
+              }}
             >
               <div className="nav-item-left">
                 <Activity size={18} />
@@ -342,7 +493,10 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
 
             <button
               className={`nav-item ${activeTab === 'history' ? 'active' : ''}`}
-              onClick={() => setActiveTab('history')}
+              onClick={() => {
+                setActiveTab('history');
+                showToast('Viewing Sitting history');
+              }}
             >
               <div className="nav-item-left">
                 <History size={18} />
@@ -353,7 +507,10 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
 
             <button
               className={`nav-item ${activeTab === 'mycushion' ? 'active' : ''}`}
-              onClick={() => setActiveTab('mycushion')}
+              onClick={() => {
+                setActiveTab('mycushion');
+                showToast('Viewing My cushion device');
+              }}
             >
               <div className="nav-item-left">
                 <Sliders size={18} />
@@ -370,7 +527,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
             </div>
             <h4 className="tip-title">Small shifts. Big comfort.</h4>
             <p className="tip-desc">
-              A little movement goes a long way. Your body will thank you.
+              Prevent buttock numbness and heat traps with dynamic micro-shifts.
             </p>
             <button
               className="tip-link"
@@ -465,7 +622,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
               <div>
                 <h1 className="page-title">A better seat for your day.</h1>
                 <p className="page-subtitle">
-                  Good morning, Alex. Let's keep you comfortable and balanced.
+                  Good morning, Alex. Tracking pressure balance, buttock temperature, and ergonomic comfort.
                 </p>
               </div>
 
@@ -490,7 +647,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
 
             {/* Dashboard Content */}
             <div className="dashboard-content">
-              {/* ROW 1: 4 Key Metrics */}
+              {/* ROW 1: 4 Primary Metrics */}
               <div className="metrics-row">
                 <div className="metric-card">
                   <div className="metric-header">
@@ -524,10 +681,12 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                     <Heart className="metric-icon" />
                   </div>
                   <div className="metric-value-wrap">
-                    <span className="metric-value">92</span>
+                    <span className="metric-value">{currentStats.comfortLevel}</span>
                     <span className="metric-unit">%</span>
                   </div>
-                  <span className="metric-sub">Comfortable & supported</span>
+                  <span className="metric-sub">
+                    {currentStats.comfortLevel >= 80 ? 'Comfortable & supported' : 'Muscle tension detected'}
+                  </span>
                 </div>
 
                 <div className="metric-card">
@@ -543,33 +702,104 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                 </div>
               </div>
 
-              {/* ROW 2: Middle Section (Pressure Distribution + Right Stacked Cards) */}
+              {/* ROW 1.5: Glute Health & Sensory Telemetry Bar */}
+              <div className="glute-telemetry-banner">
+                <div className="glute-telemetry-item">
+                  <div className="glute-icon-wrap" style={{ background: '#fdf2e9', color: '#ea580c' }}>
+                    <Thermometer size={18} />
+                  </div>
+                  <div>
+                    <div className="glute-metric-label">Seat Temp</div>
+                    <div className="glute-metric-val">
+                      {currentStats.seatTemp} °C
+                      <span className={`glute-status-chip ${Number(currentStats.seatTemp) > 37.5 ? 'chip-alert' : 'chip-good'}`}>
+                        {Number(currentStats.seatTemp) > 37.5 ? 'Heat Stagnation' : 'Normal'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="glute-telemetry-item">
+                  <div className="glute-icon-wrap" style={{ background: '#fef2f2', color: '#dc2626' }}>
+                    <Zap size={18} />
+                  </div>
+                  <div>
+                    <div className="glute-metric-label">Buttock Soreness & Fatigue</div>
+                    <div className="glute-metric-val">
+                      {currentStats.gluteFatigue} %
+                      <span className={`glute-status-chip ${currentStats.gluteFatigue > 60 ? 'chip-alert' : 'chip-good'}`}>
+                        {currentStats.gluteFatigue > 60 ? 'Decompress Soon' : 'Low Fatigue'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="glute-telemetry-item">
+                  <div className="glute-icon-wrap" style={{ background: '#ecfdf5', color: '#059669' }}>
+                    <Wind size={18} />
+                  </div>
+                  <div>
+                    <div className="glute-metric-label">Air Quality / Bio-gas (VOC)</div>
+                    <div className="glute-metric-val">
+                      {currentStats.gasPpm} ppm
+                      <span className={`glute-status-chip ${currentStats.gasDetected ? 'chip-alert' : 'chip-good'}`}>
+                        {currentStats.gasDetected ? 'Ventilating' : 'Clean'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="glute-telemetry-item">
+                  <div className="glute-icon-wrap" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
+                    <Compass size={18} />
+                  </div>
+                  <div>
+                    <div className="glute-metric-label">Buttock Fit & Load Bias</div>
+                    <div className="glute-metric-val" style={{ fontSize: '13px', fontWeight: 700, color: currentStats.fitColor }}>
+                      {currentStats.fitStatus}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ROW 2: Middle Section (Pressure Distribution Heatmap + Right Stacked Cards) */}
               <div className="grid-row-two-col">
                 {/* Left: Pressure Distribution */}
                 <div className="card">
                   <div className="card-header-flex">
                     <div>
-                      <h2 className="card-title">Pressure distribution</h2>
+                      <h2 className="card-title">Pressure & Thermal Distribution</h2>
                       <p className="card-subtitle">
-                        A little awareness. A more balanced seat.
+                        High-density ischial & gluteal sensor array. Real-time pelvic fit monitoring.
                       </p>
                     </div>
                     <div className="live-pill">
                       <span className="live-dot" />
-                      <span>Live</span>
+                      <span>Live 25Hz</span>
                     </div>
                   </div>
 
                   <div className="pressure-display-grid">
+                    {/* Visual Cushion Stage with Heatmap & Vent Port */}
                     <div className="cushion-stage">
-                      <div className="pos-label back">BACK</div>
-                      <div className="pos-label front">FRONT</div>
-                      <div className="pos-label left">L</div>
-                      <div className="pos-label right">R</div>
+                      <div className="pos-label back">BACK / SACRUM</div>
+                      <div className="pos-label front">FRONT / THIGHS</div>
+                      <div className="pos-label left">L (GLUTE)</div>
+                      <div className="pos-label right">R (GLUTE)</div>
 
                       <div className="cushion-contour">
                         <div className="cushion-center-line" />
 
+                        {/* Sacrum / Coccyx Central Node */}
+                        <div
+                          className="heat-node sacral-node"
+                          style={{
+                            background: currentStats.sacralGlow,
+                            opacity: currentStats.sacralGlow !== 'transparent' ? 0.9 : 0
+                          }}
+                        />
+
+                        {/* Left Ischial Sit Bone Node */}
                         <div
                           className="heat-node"
                           style={{
@@ -578,6 +808,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                           }}
                         />
 
+                        {/* Right Ischial Sit Bone Node */}
                         <div
                           className="heat-node"
                           style={{
@@ -585,12 +816,21 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                             transform: `scale(${0.9 + (currentStats.rightPct / 100) * 0.4})`
                           }}
                         />
+
+                        {/* Bio-gas active vent animation overlay */}
+                        {currentStats.gasDetected && (
+                          <div className="gas-dispersion-ring">
+                            <Wind size={20} color="#10b981" />
+                            <span>Venting chamber</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
+                    {/* Side Stats */}
                     <div className="pressure-stats">
                       <div>
-                        <div className="balance-title-sub">Weight balance</div>
+                        <div className="balance-title-sub">Weight Balance Breakdown</div>
                         <div className="balance-status-heading">
                           {currentStats.balanceCategory}
                         </div>
@@ -614,23 +854,33 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                       </div>
 
                       <div>
-                        <div className="balance-title-sub">Peak pressure</div>
+                        <div className="balance-title-sub">Peak Contact Pressure</div>
                         <div className="peak-pressure-val">
                           {currentStats.peakKpa} kPa
                         </div>
                         <div className="peak-pressure-desc">
-                          Within your comfort range
+                          {Number(currentStats.peakKpa) > 6.0
+                            ? 'High pressure concentration on sit-bones'
+                            : 'Within ergonomic comfort threshold (<5.0 kPa)'}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="balance-title-sub">Primary Load Vector</div>
+                        <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                          {currentStats.quadrantBias}
                         </div>
                       </div>
                     </div>
                   </div>
 
                   <div className="heat-legend-bar">
-                    <span>Low pressure</span>
+                    <span>Low pressure / Cool</span>
                     <div className="heat-gradient-preview" />
-                    <span>High</span>
+                    <span>High load / Thermal Trap</span>
                   </div>
 
+                  {/* Status Banner */}
                   <div className="cushion-banner-status">
                     {currentStats.isWarning ? (
                       <AlertCircle size={17} color="#d97706" />
@@ -643,6 +893,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                     </span>
                   </div>
 
+                  {/* Comprehensive Simulation Toolbar for Testing All Scenarios */}
                   <div className="sim-controls-toolbar">
                     <span className="sim-label">Simulate sitting test:</span>
                     <div className="sim-btn-group">
@@ -650,7 +901,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                         className={`btn-pill-mode ${posturePreset === 'balanced' ? 'active' : ''}`}
                         onClick={() => {
                           setPosturePreset('balanced');
-                          showToast('Posture: Balanced alignment');
+                          showToast('Simulating: Balanced symmetry');
                         }}
                       >
                         Balanced
@@ -659,28 +910,55 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                         className={`btn-pill-mode ${posturePreset === 'left' ? 'active' : ''}`}
                         onClick={() => {
                           setPosturePreset('left');
-                          showToast('Simulating: Leaning Left');
+                          showToast('Simulating: Heavy Left Glute Load');
                         }}
                       >
-                        Leaning Left
+                        Left Heavy (72%)
                       </button>
                       <button
                         className={`btn-pill-mode ${posturePreset === 'right' ? 'active' : ''}`}
                         onClick={() => {
                           setPosturePreset('right');
-                          showToast('Simulating: Leaning Right');
+                          showToast('Simulating: Heavy Right Glute Load');
                         }}
                       >
-                        Leaning Right
+                        Right Heavy (74%)
                       </button>
                       <button
                         className={`btn-pill-mode ${posturePreset === 'slouch' ? 'active' : ''}`}
                         onClick={() => {
                           setPosturePreset('slouch');
-                          showToast('Simulating: Slouching posture');
+                          showToast('Simulating: Coccyx / Sacral Slouch');
                         }}
                       >
-                        Slouching
+                        Sacral Slouch
+                      </button>
+                      <button
+                        className={`btn-pill-mode ${posturePreset === 'fart' ? 'active' : ''}`}
+                        onClick={handleTriggerFartVent}
+                        style={{ borderColor: '#10b981' }}
+                      >
+                        Bio-gas Spike
+                      </button>
+                      <button
+                        className={`btn-pill-mode ${posturePreset === 'hot' ? 'active' : ''}`}
+                        onClick={() => {
+                          setPosturePreset('hot');
+                          showToast('Simulating: Gluteal Thermal Stagnation (38.2°C)');
+                        }}
+                        style={{ borderColor: '#ef4444' }}
+                      >
+                        Heat Stagnation
+                      </button>
+                      <button
+                        className={`btn-pill-mode ${posturePreset === 'fatigue' ? 'active' : ''}`}
+                        onClick={() => {
+                          setPosturePreset('fatigue');
+                          showToast('Simulating: Buttock Soreness & High Fatigue (84%)');
+                        }}
+                        style={{ borderColor: '#ea580c' }}
+                      >
+                        High Fatigue
                       </button>
                       <button
                         className="btn-pill-mode"
@@ -717,16 +995,28 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                             ? 'Leaning left'
                             : posturePreset === 'right'
                             ? 'Leaning right'
-                            : 'Slouch detected'}
+                            : posturePreset === 'slouch'
+                            ? 'Slouch detected'
+                            : posturePreset === 'fart'
+                            ? 'Ventilating chamber'
+                            : posturePreset === 'hot'
+                            ? 'Heat trap alert'
+                            : 'Glute muscle fatigue'}
                         </h4>
                         <p>
                           {posturePreset === 'balanced'
                             ? "You're upright and centered. Keep your shoulders relaxed."
                             : posturePreset === 'left'
-                            ? 'Left sit-bone taking 72% weight. Tilt slightly right.'
+                            ? 'Left glute taking 72% weight. Tilt slightly right to equalize hips.'
                             : posturePreset === 'right'
-                            ? 'Right pelvic tilt observed. Align your spine.'
-                            : 'Pressure shifted back to sacrum. Sit back into lumbar curve.'}
+                            ? 'Right pelvic tilt observed. Align your spine and sit-bones.'
+                            : posturePreset === 'slouch'
+                            ? 'Tailbone taking 7.5 kPa. Engage lumbar curve to offload coccyx.'
+                            : posturePreset === 'fart'
+                            ? 'Micro-vent fan engaged. Bio-gas dissipating from core cushion channel.'
+                            : posturePreset === 'hot'
+                            ? 'Buttock temperature reached 38.2°C. Stand for 2 mins to circulate air.'
+                            : 'High vascular compression. Micro-movement suggested to relieve buttock ache.'}
                         </p>
                         <span className="posture-now-meta">
                           Maintained for the last 12 minutes
@@ -753,7 +1043,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
 
                     <p className="break-desc">
                       Stand up, stretch, or take a short walk. Two minutes can make a
-                      difference.
+                      difference to capillary blood flow in your gluteal muscles.
                     </p>
 
                     <div className="break-progress-track">
@@ -980,9 +1270,9 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
           <div className="view-container">
             <section className="page-header">
               <div>
-                <h1 className="page-title">Posture Insights & Biomechanics</h1>
+                <h1 className="page-title">Posture & Gluteal Biomechanics Insights</h1>
                 <p className="page-subtitle">
-                  Longitudinal biomechanical analysis and pelvis pressure distribution patterns.
+                  Longitudinal pelvic load asymmetry, thermal retention patterns, and glute fatigue diagnostics.
                 </p>
               </div>
               <div className="page-actions">
@@ -1025,25 +1315,25 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
 
                 <div className="metric-card">
                   <div className="metric-header">
-                    <span className="metric-label">Sacral Unload Frequency</span>
-                    <Zap className="metric-icon" />
+                    <span className="metric-label">Avg Seat Contact Temp</span>
+                    <Thermometer className="metric-icon" />
                   </div>
                   <div className="metric-value-wrap">
-                    <span className="metric-value">14</span>
-                    <span className="metric-unit">times/day</span>
+                    <span className="metric-value">36.6</span>
+                    <span className="metric-unit">°C</span>
                   </div>
-                  <span className="metric-sub">Healthy micro-shift frequency</span>
+                  <span className="metric-sub">Within thermo-neutral zone</span>
                 </div>
 
                 <div className="metric-card">
                   <div className="metric-header">
-                    <span className="metric-label">Ergonomic Fatigue Risk</span>
+                    <span className="metric-label">Gluteal Soreness Risk</span>
                     <ShieldCheck className="metric-icon" />
                   </div>
                   <div className="metric-value-wrap">
-                    <span className="metric-value" style={{ color: '#2b7a4b' }}>Low</span>
+                    <span className="metric-value" style={{ color: '#2b7a4b' }}>Low (24%)</span>
                   </div>
-                  <span className="metric-sub">Based on 14h active telemetry</span>
+                  <span className="metric-sub">Capillary perfusion preserved</span>
                 </div>
               </div>
 
@@ -1107,7 +1397,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                 <div className="card">
                   <div className="card-header-flex">
                     <div>
-                      <h2 className="card-title">Behavioral Distribution</h2>
+                      <h2 className="card-title">Behavioral & Glute Stress Categories</h2>
                       <p className="card-subtitle">Aggregate posture categorization</p>
                     </div>
                   </div>
@@ -1117,7 +1407,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                       <div className="behavior-info">
                         <span className="behavior-dot" style={{ backgroundColor: '#2a4737' }} />
                         <div>
-                          <strong>Upright Ergonomic</strong>
+                          <strong>Upright Ergonomic Fit</strong>
                           <div className="behavior-sub">Ischial bones centered, spine in natural S-curve</div>
                         </div>
                       </div>
@@ -1150,8 +1440,8 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                       <div className="behavior-info">
                         <span className="behavior-dot" style={{ backgroundColor: '#dc2626' }} />
                         <div>
-                          <strong>Sacral Slouch</strong>
-                          <div className="behavior-sub">Posterior pelvic rotation causing disc compression</div>
+                          <strong>Coccyx / Sacral Slouch</strong>
+                          <div className="behavior-sub">Tailbone overcompression causing disc fatigue</div>
                         </div>
                       </div>
                       <div className="behavior-pct">3%</div>
@@ -1178,7 +1468,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
               <div>
                 <h1 className="page-title">Sitting History & Telemetry Logs</h1>
                 <p className="page-subtitle">
-                  Historical session timestamps, posture compliance logs, and break metrics.
+                  Historical session timestamps, posture compliance logs, temperature records, and bio-gas events.
                 </p>
               </div>
 
@@ -1223,9 +1513,12 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                       <tr>
                         <th>Date & Session</th>
                         <th>Duration</th>
-                        <th>Posture Score</th>
+                        <th>Score</th>
                         <th>L/R Balance</th>
-                        <th>Break Compliance</th>
+                        <th>Temp</th>
+                        <th>Fatigue</th>
+                        <th>Air / Bio-gas</th>
+                        <th>Fit Diagnostic</th>
                         <th>Biomechanical Notes</th>
                       </tr>
                     </thead>
@@ -1252,7 +1545,16 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                             <strong>{session.balance}</strong>
                           </td>
                           <td>
-                            <span className="break-badge">{session.breaks}</span>
+                            <span style={{ fontSize: '12px', fontWeight: 600 }}>{session.temp}</span>
+                          </td>
+                          <td>
+                            <span style={{ fontSize: '12px', color: '#ea580c', fontWeight: 600 }}>{session.fatigue}</span>
+                          </td>
+                          <td>
+                            <span style={{ fontSize: '11.5px', color: '#059669', fontWeight: 600 }}>{session.gas}</span>
+                          </td>
+                          <td>
+                            <span className="break-badge">{session.fit}</span>
                           </td>
                           <td className="table-notes">{session.notes}</td>
                         </tr>
@@ -1262,7 +1564,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                 </div>
 
                 <div className="table-footer-summary">
-                  <span>Showing {filteredSessions.length} sessions</span>
+                  <span>Showing {filteredSessions.length} recorded sessions</span>
                   <button
                     className="btn-secondary"
                     onClick={() => showToast('Refreshed telemetry logs')}
@@ -1281,9 +1583,9 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
           <div className="view-container">
             <section className="page-header">
               <div>
-                <h1 className="page-title">My Cushion Hardware Settings</h1>
+                <h1 className="page-title">My Cushion Hardware & Sensory Config</h1>
                 <p className="page-subtitle">
-                  Configure Wavy Cushion One telemetry, haptic sensory actuators, and BLE telemetry.
+                  Configure Wavy Cushion One sensor matrices: pressure transducers, thermal sensors, and bio-gas detectors.
                 </p>
               </div>
 
@@ -1312,7 +1614,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                     </div>
                     <div style={{ flex: 1 }}>
                       <div className="hardware-model-name">Wavy Cushion One</div>
-                      <div className="hardware-serial">Model ID: WAVY-C1-2026-X8 · Firmware v2.4.1</div>
+                      <div className="hardware-serial">Model ID: WAVY-C1-2026-X8 · Firmware v2.5.0-SENS</div>
                       <div className="hardware-status-row">
                         <span className={`status-dot ${!isConnected ? 'disconnected' : ''}`} />
                         <span style={{ fontSize: 13, fontWeight: 600 }}>
@@ -1329,20 +1631,20 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
 
                   <div className="device-spec-grid">
                     <div className="spec-card">
-                      <div className="spec-label">Sensor Array</div>
+                      <div className="spec-label">Pressure Array</div>
                       <div className="spec-value">16-Zone Piezo Matrix</div>
                     </div>
                     <div className="spec-card">
-                      <div className="spec-label">Sampling Rate</div>
-                      <div className="spec-value">25 Hz (Continuous)</div>
+                      <div className="spec-label">Thermal Sensor</div>
+                      <div className="spec-value">Dual NTC Surface Probe</div>
                     </div>
                     <div className="spec-card">
-                      <div className="spec-label">Actuator System</div>
-                      <div className="spec-value">Dual Linear Resonant</div>
+                      <div className="spec-label">Bio-gas / VOC Sensor</div>
+                      <div className="spec-value">MOX Chemiresistive (H2S/CH4)</div>
                     </div>
                     <div className="spec-card">
-                      <div className="spec-label">Calibration Status</div>
-                      <div className="spec-value" style={{ color: '#2b7a4b' }}>Zero Baseline Valid</div>
+                      <div className="spec-label">Micro-pore Ventilation</div>
+                      <div className="spec-value" style={{ color: '#2b7a4b' }}>Active Core Duct</div>
                     </div>
                   </div>
 
@@ -1351,10 +1653,10 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                       className="btn-secondary"
                       onClick={() => {
                         setBatteryLevel(100);
-                        showToast('Diagnostic completed: All 16 pressure nodes operational');
+                        showToast('Self-Test Passed: 16 pressure nodes, 2 thermal probes, 1 VOC detector operational');
                       }}
                     >
-                      Run Sensor Self-Test
+                      Run Full Sensor Self-Test
                     </button>
                     <button
                       className="btn-secondary"
@@ -1371,7 +1673,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                 {/* Hardware Actuation Settings */}
                 <div className="card">
                   <h2 className="card-title" style={{ marginBottom: 16 }}>
-                    Haptic Feedback & Sensor Preferences
+                    Actuator, Heat Relief & Bio-Gas Preferences
                   </h2>
 
                   <div className="device-toggles-list">
@@ -1399,7 +1701,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                       <div>
                         <div className="toggle-title">Break Reminder Haptic Pulse</div>
                         <div className="toggle-desc">
-                          Double-pulse notification at the {breakInterval}-minute mark.
+                          Double-pulse notification at the {breakInterval}-minute mark to relieve gluteal ache.
                         </div>
                       </div>
                       <label className="switch-ui">
@@ -1409,6 +1711,46 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                           onChange={(e) => {
                             setBreakReminders(e.target.checked);
                             showToast(e.target.checked ? 'Break reminders on' : 'Break reminders off');
+                          }}
+                        />
+                        <span className="slider-ui" />
+                      </label>
+                    </div>
+
+                    <div className="device-toggle-row">
+                      <div>
+                        <div className="toggle-title">Bio-gas / VOC Detection & Auto-Vent</div>
+                        <div className="toggle-desc">
+                          Detect gas emission spikes and auto-activate micro-vent chamber exhaust.
+                        </div>
+                      </div>
+                      <label className="switch-ui">
+                        <input
+                          type="checkbox"
+                          checked={gasDetectionActive}
+                          onChange={(e) => {
+                            setGasDetectionActive(e.target.checked);
+                            showToast(e.target.checked ? 'Bio-gas detection enabled' : 'Bio-gas detection paused');
+                          }}
+                        />
+                        <span className="slider-ui" />
+                      </label>
+                    </div>
+
+                    <div className="device-toggle-row">
+                      <div>
+                        <div className="toggle-title">Glute Thermal Relief Alert</div>
+                        <div className="toggle-desc">
+                          Notifies when seat contact temperature exceeds 37.5°C to avoid heat rash.
+                        </div>
+                      </div>
+                      <label className="switch-ui">
+                        <input
+                          type="checkbox"
+                          checked={thermalReliefActive}
+                          onChange={(e) => {
+                            setThermalReliefActive(e.target.checked);
+                            showToast(e.target.checked ? 'Thermal relief alerts active' : 'Thermal relief alerts paused');
                           }}
                         />
                         <span className="slider-ui" />
@@ -1486,7 +1828,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
             <div className="modal-body">
               <p style={{ marginBottom: 12 }}>
                 Please sit comfortably upright on the center of the cushion with
-                both feet flat on the floor before calibrating.
+                both feet flat on the floor before calibrating. Both ischial sit-bones and thermal baseline will be re-zeroed.
               </p>
               {calibrationStep === 1 && (
                 <div
@@ -1499,7 +1841,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                     color: '#2a4737'
                   }}
                 >
-                  Calibrating pressure sensors... (stay still)
+                  Calibrating pressure & thermal sensors... (stay still)
                 </div>
               )}
               {calibrationStep === 2 && (
@@ -1541,7 +1883,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
         <div className="modal-overlay" onClick={() => setShowTipsModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="modal-title">Ergonomic Sitting Tips</h3>
+              <h3 className="modal-title">Ergonomic Sitting & Buttock Care Tips</h3>
               <button
                 className="icon-button"
                 onClick={() => setShowTipsModal(false)}
@@ -1571,10 +1913,19 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                 <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                   <span style={{ fontSize: 18 }}>⚖️</span>
                   <div>
-                    <strong>Balanced Sit Bones:</strong>
+                    <strong>Balanced Sit Bones & Soreness Relief:</strong>
                     <div style={{ color: '#5c6760', fontSize: 12.5 }}>
                       Distribute body weight equally across both sides of the
-                      cushion to avoid scoliosis strain.
+                      cushion to avoid muscle fatigue, piriformis syndrome, and asymmetric soreness.
+                    </div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: 18 }}>🌡️</span>
+                  <div>
+                    <strong>Heat Dispersion:</strong>
+                    <div style={{ color: '#5c6760', fontSize: 12.5 }}>
+                      Avoid sitting uninterrupted if seat surface temperature exceeds 37.5°C to preserve skin circulation.
                     </div>
                   </div>
                 </div>
@@ -1661,7 +2012,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
         >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="modal-title">Export Posture Report</h3>
+              <h3 className="modal-title">Export Posture & Biomechanical Report</h3>
               <button
                 className="icon-button"
                 onClick={() => setShowExportModal(false)}
@@ -1671,8 +2022,7 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
             </div>
             <div className="modal-body">
               <p style={{ marginBottom: 12 }}>
-                Export a detailed summary of today's posture session for your
-                ergonomics records or health tracking.
+                Export a detailed summary of today's sitting posture, buttock load distribution, and physiological telemetry.
               </p>
               <div
                 style={{
@@ -1688,6 +2038,9 @@ Report generated by WAVY COMPANY Smart Cushion Dashboard.
                 <div>⏱️ <strong>Session duration:</strong> 42 min (Total: 2h 18m)</div>
                 <div>🎯 <strong>Posture score:</strong> {currentStats.score} / 100</div>
                 <div>⚖️ <strong>Balance:</strong> Left {currentStats.leftPct}% / Right {currentStats.rightPct}%</div>
+                <div>🌡️ <strong>Seat Temp:</strong> {currentStats.seatTemp} °C</div>
+                <div>⚡ <strong>Glute Fatigue:</strong> {currentStats.gluteFatigue} %</div>
+                <div>💨 <strong>Air Quality / Bio-gas:</strong> {currentStats.gasPpm} ppm ({gasEventsCount} events)</div>
                 <div>🔋 <strong>Cushion Battery:</strong> {batteryLevel}%</div>
               </div>
             </div>
