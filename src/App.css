@@ -1241,3 +1241,345 @@ input:checked + .slider-ui:before {
     grid-template-columns: 1fr;
   }
 }
+
+/* ========================================================
+   ADDITIONAL VIEWS STYLING: Insights, History, My Cushion
+   ======================================================== */
+
+.view-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.badge-tag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--bg-accent-green);
+  color: var(--primary-green);
+}
+
+/* Posture Insights View */
+.symmetry-chart-box {
+  background: #f7f9f5;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 20px 16px;
+  margin-bottom: 16px;
+}
+
+.symmetry-bars-grid {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 140px;
+  padding-bottom: 24px;
+}
+
+.symmetry-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.col-percentage-tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.symmetry-bar-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 90px;
+}
+
+.bar-left, .bar-right {
+  width: 12px;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.4s ease;
+}
+
+.col-hour-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.insight-recommendation-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background-color: #ecf3ea;
+  border: 1px solid #d4e2d0;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 12.5px;
+  color: var(--primary-green);
+  line-height: 1.45;
+}
+
+/* Behavioral Distribution */
+.behavior-pie-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.behavior-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.behavior-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.behavior-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.behavior-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.behavior-sub {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.behavior-pct {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* History View */
+.filter-button-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.history-table th {
+  padding: 12px 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.history-table td {
+  padding: 14px 14px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-primary);
+}
+
+.history-table tr:hover td {
+  background-color: #f9faf7;
+}
+
+.table-title {
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.table-sub {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.duration-tag {
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--bg-card-subtle);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border-light);
+}
+
+.score-pill {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.score-high {
+  background: #e3eedf;
+  color: #265e38;
+}
+
+.score-mid {
+  background: #fdf3d8;
+  color: #a16207;
+}
+
+.break-badge {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.table-notes {
+  font-size: 12px;
+  color: var(--text-secondary);
+  max-width: 260px;
+}
+
+.table-footer-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+/* My Cushion Detailed View */
+.hardware-hero-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: #f7f9f5;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+
+.device-icon-large {
+  width: 60px;
+  height: 60px;
+  background-color: var(--bg-accent-green);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-green);
+  flex-shrink: 0;
+}
+
+.hardware-model-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.hardware-serial {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.hardware-status-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.battery-gauge-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  border-left: 1px solid var(--border-light);
+  padding-left: 18px;
+}
+
+.battery-val {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.battery-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.device-spec-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.spec-card {
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+
+.spec-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.spec-value {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+
+.setting-slider-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+}
+
+.setting-slider-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.slider-value-pill {
+  font-size: 11.5px;
+  font-weight: 700;
+  background: var(--bg-card-subtle);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border-light);
+}
+
+.haptic-selector-row {
+  display: flex;
+  gap: 8px;
+}
+
