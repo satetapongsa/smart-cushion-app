@@ -193,6 +193,8 @@
 .user-info {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  max-width: 145px;
 }
 
 .user-name {
@@ -200,11 +202,50 @@
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .user-role {
   font-size: 11px;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* User Profile Menu Popover */
+.profile-popover {
+  position: absolute;
+  bottom: 80px;
+  left: 16px;
+  width: 220px;
+  background: #ffffff;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popup);
+  padding: 10px;
+  z-index: 1000;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.profile-popover-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+}
+
+.profile-popover-item:hover {
+  background-color: var(--bg-card-subtle);
+  color: var(--text-primary);
 }
 
 /* Main Content Area */
